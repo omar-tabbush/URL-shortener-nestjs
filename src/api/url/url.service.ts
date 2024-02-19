@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUrlDto } from './dto/create-url.dto';
-import { UpdateUrlDto } from './dto/update-url.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { nanoid } from 'nanoid';
 import { ClickService } from '../click/click.service';
@@ -23,15 +22,15 @@ export class UrlService {
       data: { ...createClickDto, shortUrl: createClickDto.shortUrl, userId },
     });
 
-    // await this.click.create(url.id);
-
     return url;
   }
 
   async findByShortUrl(shortUrl: string) {
-    return await this.prisma.url.findUniqueOrThrow({
+    const url = await this.prisma.url.findUniqueOrThrow({
       where: { shortUrl },
     });
+    await this.addOneClick(url.id);
+    return url;
   }
 
   async findAll() {
@@ -42,15 +41,8 @@ export class UrlService {
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} url`;
-  }
-
-  update(id: number, updateUrlDto: UpdateUrlDto) {
-    return `This action updates a #${id} url`;
-  }
-
   async addOneClick(id: string) {
+    await this.click.create(id);
     return await this.prisma.url.update({
       where: { id },
       data: {
@@ -59,9 +51,5 @@ export class UrlService {
         },
       },
     });
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} url`;
   }
 }
