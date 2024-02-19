@@ -1,11 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { CreateClickDto } from './dto/create-click.dto';
 import { UpdateClickDto } from './dto/update-click.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { UrlService } from '../url/url.service';
 
 @Injectable()
 export class ClickService {
-  create(createClickDto: CreateClickDto) {
-    return 'This action adds a new click';
+  constructor(
+    private prisma: PrismaService,
+  ) {}
+  async create(urlId: string) {
+    return await this.prisma.click.create({
+      data: {
+        urlId,
+      },
+    });
+  }
+
+  async handleClick(shortUrl: string) {
+    const clicked = await this.prisma.click.create({
+      data: {
+        url: {
+          connect: {
+            shortUrl,
+          },
+        },
+      },
+    });
+    // await this.urlService.addOneClick(clicked.urlId);
+
+    return clicked;
   }
 
   findAll() {

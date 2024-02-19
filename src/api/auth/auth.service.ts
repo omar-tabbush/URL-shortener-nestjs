@@ -13,12 +13,12 @@ export class AuthService {
     private usersService: UserService,
   ) {}
 
-  async register(createAuthDto: CreateAuthDto) {
+  async register(createAuthDto: any) {
     const user = await this.usersService.create(createAuthDto);
     
     return {
       access_token: this.jwtService.sign(user),
-      user
+      ...user
     };
   }
 
@@ -60,7 +60,7 @@ export class AuthService {
 
     return {
       access_token: this.jwtService.sign(validate),
-      user : validate
+      ...validate
     };
   }
 }

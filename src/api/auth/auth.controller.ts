@@ -5,12 +5,14 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtGuard } from './guards/Jwt.guard';
 import { User } from 'src/decorators/user/user.decorator';
+import { Public } from 'src/decorators/public/public.decorator';
 
 @Controller('auth')
 export class AuthController {
 
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @UseGuards(AuthGuard('local'))
   @Post('login')
   async login(@Body() loginBody: { email: string, password: string }) {

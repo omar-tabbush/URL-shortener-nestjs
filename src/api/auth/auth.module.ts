@@ -15,11 +15,7 @@ import { UserService } from '../user/user.service';
       secret: process.env.JWT_SECRET || '',
       signOptions: { expiresIn: '24h' },
     }),
-    ConfigModule.forRoot({
-      load: [() => ({
-        secret: process.env.JWT_SECRET || '',
-      })],
-    }),
+
   ]
 })
 export class AuthModule {}

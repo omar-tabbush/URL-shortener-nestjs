@@ -1,7 +1,5 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
 import { PUBLIC_KEY } from 'src/common/constants/public.constant';
@@ -9,7 +7,7 @@ import { PUBLIC_KEY } from 'src/common/constants/public.constant';
 @Injectable()
 export class JwtGuard extends AuthGuard('jwt')  {
 
-  constructor(private jwtService: JwtService, private config: ConfigService, private reflector: Reflector) {
+  constructor(private reflector: Reflector) {
     super();
   }
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
