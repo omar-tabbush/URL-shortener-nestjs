@@ -34,7 +34,7 @@ export class UrlService {
 
   async findByShortUrl(shortUrl: string) {
     const cachedUrl = await this.cacheService.get<Url>(shortUrl);
-    
+
     if (cachedUrl) {
       await this.addOneClick(cachedUrl.id);
       console.log(`Getting ${cachedUrl?.shortUrl} data from cache!`);
@@ -43,19 +43,55 @@ export class UrlService {
     const url = await this.prisma.url.findUniqueOrThrow({
       where: { shortUrl },
     });
-    
+
     await this.cacheService.set(url.shortUrl, url);
 
     await this.addOneClick(url.id);
     return url;
   }
 
-  async findAll() {
-    return await this.prisma.url.findMany({
-      select: {
-        shortUrl: true,
-      },
-    });
+  async findAll(userId: string, page: number) {
+    const pageSize = 20;
+    const cachedUrls = await this.cacheService.get<Url[]>(
+      `${userId}-urls-${page}`,
+    );
+
+    let urls: Url[];
+
+    if (cachedUrls) {
+      console.log(`Getting ${userId} data from cache!`);
+      urls = cachedUrls;
+    } else {
+      urls = await this.prisma.url.findMany({
+        where: { userId },
+        take: pageSize,
+        skip: (page - 1 >= 0 ? page : 0) * pageSize,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    }
+
+    const cachedCount = await this.cacheService.get<number>(
+      `${userId}-urls-count`,
+    );
+
+    let count: number;
+    if (cachedCount) {
+      count = cachedCount;
+    } else {
+      count = await this.prisma.url.count({
+        where: { userId },
+      });
+    }
+
+    await this.cacheService.set(`${userId}-urls-count`, count);
+    console.log(`Setting ${userId} totalUrls to cache!`);
+
+    console.log(`Setting ${userId} data to cache!`);
+    await this.cacheService.set(`${userId}-urls-${page}`, urls);
+
+    return { urls, count, pageSize };
   }
 
   async addOneClick(id: string) {
@@ -68,5 +104,19 @@ export class UrlService {
         },
       },
     });
+  }
+  async delete(id: string, userId: string, page?: number) {
+    const deleted = await this.prisma.url.delete({
+      where: { id, userId },
+      select: {
+        shortUrl: true,
+      },
+    });
+    if (deleted) {
+      await this.cacheService.del(`${userId}-urls-count`);
+      await this.cacheService.del(`${userId}-urls-${page ?? 0}`);
+      await this.cacheService.del(`${deleted.shortUrl}`);
+    }
+    return deleted;
   }
 }

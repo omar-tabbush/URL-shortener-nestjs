@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Param, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  UseInterceptors,
+  Delete,
+} from '@nestjs/common';
 import { UrlService } from './url.service';
 import { CreateUrlDto } from './dto/create-url.dto';
 import { JwtGuard } from '../auth/guards/Jwt.guard';
@@ -25,10 +34,20 @@ export class UrlController {
     return await this.urlService.findByShortUrl(shortUrl);
   }
 
-  @Public()
-  @Get('all')
-  async getAll() {
-    return await this.urlService.findAll();
+  @Get('all/:page')
+  async getAll(
+    @User({ prop: 'id', throwIfNotExist: true }) userId: string,
+    @Param('page') page: number,
+  ) {
+    return await this.urlService.findAll(userId, page);
   }
 
+  @Delete(':id')
+  async delete(
+    @Param('id') id: string,
+    @User({ prop: 'id', throwIfNotExist: true }) userId: string,
+    @Body() body: {page?: number}, // to remove the cached url page
+  ) {
+    return await this.urlService.delete(id, userId, body?.page);
+  }
 }
