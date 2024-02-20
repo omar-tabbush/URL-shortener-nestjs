@@ -1,9 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateClickDto } from './dto/create-click.dto';
-import { UpdateClickDto } from './dto/update-click.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UrlService } from '../url/url.service';
-
 @Injectable()
 export class ClickService {
   constructor(
@@ -32,19 +28,4 @@ export class ClickService {
     return clicked;
   }
 
-  findAll() {
-    return `This action returns all click`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} click`;
-  }
-
-  update(id: number, updateClickDto: UpdateClickDto) {
-    return `This action updates a #${id} click`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} click`;
-  }
 }

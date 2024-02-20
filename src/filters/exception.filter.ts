@@ -12,11 +12,11 @@ import { Response } from 'express';
 import { startCase } from 'lodash';
 import { nanoid } from 'nanoid';
 @Catch()
-export class PrismaExceptionFilterFilter<T>
+export class CustomExceptionFilter<T>
   extends BaseExceptionFilter
   implements ExceptionFilter
 {
-  private readonly logger = new Logger(PrismaExceptionFilterFilter.name);
+  private readonly logger = new Logger(CustomExceptionFilter.name);
 
   catch(
     exception: Prisma.PrismaClientKnownRequestError | HttpException,

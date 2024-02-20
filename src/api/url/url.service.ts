@@ -1,14 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateUrlDto } from './dto/create-url.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { nanoid } from 'nanoid';
 import { ClickService } from '../click/click.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { Url } from '@prisma/client';
 
 @Injectable()
 export class UrlService {
   constructor(
     private prisma: PrismaService,
     private click: ClickService,
+    @Inject(CACHE_MANAGER) private cacheService: Cache,
   ) {}
 
   async create(createClickDto: CreateUrlDto, userId: string) {
@@ -22,13 +26,26 @@ export class UrlService {
       data: { ...createClickDto, shortUrl: createClickDto.shortUrl, userId },
     });
 
+    await this.cacheService.set(url.shortUrl, url);
+    console.log(`Setting ${url.shortUrl} data to cache!`);
+
     return url;
   }
 
   async findByShortUrl(shortUrl: string) {
+    const cachedUrl = await this.cacheService.get<Url>(shortUrl);
+    
+    if (cachedUrl) {
+      await this.addOneClick(cachedUrl.id);
+      console.log(`Getting ${cachedUrl?.shortUrl} data from cache!`);
+      return cachedUrl;
+    }
     const url = await this.prisma.url.findUniqueOrThrow({
       where: { shortUrl },
     });
+    
+    await this.cacheService.set(url.shortUrl, url);
+
     await this.addOneClick(url.id);
     return url;
   }

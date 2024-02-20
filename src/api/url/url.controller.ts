@@ -1,11 +1,13 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UrlService } from './url.service';
 import { CreateUrlDto } from './dto/create-url.dto';
 import { JwtGuard } from '../auth/guards/Jwt.guard';
 import { User } from 'src/decorators/user/user.decorator';
 import { Public } from 'src/decorators/public/public.decorator';
+import { CacheInterceptor, CacheKey } from '@nestjs/cache-manager';
 
 @Controller('url')
+@UseGuards(JwtGuard)
 export class UrlController {
   constructor(private readonly urlService: UrlService) {}
 
@@ -29,8 +31,4 @@ export class UrlController {
     return await this.urlService.findAll();
   }
 
-  @Post()
-  async addOneClick(@Body('id') id: string) {
-    return await this.urlService.addOneClick(id);
-  }
 }
